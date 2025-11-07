@@ -60,14 +60,15 @@
   .badge { font-size:12px; padding:5px 9px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); }
   .hr { height:1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent); margin: 18px 0; }
   .mutetext { color: var(--muted); font-size: 12px; }
+  /* 전체화면 실제 배경 이미지: repo 루트의 `이미지/배경.jpg` 사용 */
   body::before{
-  content:"";
-  position: fixed;
-  inset: 0;
-  z-index: -1; /* 모든 UI 뒤 */
-  background: url("이미지/배경.jpg") center/cover no-repeat fixed;
-  filter: brightness(.6) saturate(1.05);
-}
+    content:"";
+    position: fixed;
+    inset: 0;
+    z-index: -1; /* 모든 UI 뒤 */
+    background: url("이미지/배경.jpg") center/cover no-repeat fixed;
+    filter: brightness(.6) saturate(1.05);
+  }
 </style>
 </head>
 <body>
@@ -147,35 +148,35 @@ const CHARACTERS = [
   {
     id: 'lucifer',
     name: '루시퍼',
-    img: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800"><defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="%238b5cf6" offset="0"/><stop stop-color="%2306b6d4" offset="1"/></linearGradient></defs><rect width="100%" height="100%" fill="%23111827"/><circle cx="300" cy="300" r="180" fill="url(%23g)"/><text x="50%" y="75%" font-size="48" fill="white" font-family="Arial" text-anchor="middle">루시퍼</text></svg>',
+    img: '이미지/루시퍼.jpg',
     desc: '냉정한 판단으로 전황을 읽는 엘리트 서포터.',
     traits: { 성격: '냉정', 원형: '현자', 역할: '서포터', 공격: '마법', 배치: '후열' },
   },
   {
     id: 'aria',
     name: '아리아',
-    img: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800"><rect width="100%" height="100%" fill="%230f172a"/><rect x="50" y="120" width="500" height="560" rx="20" fill="%238b5cf6"/><text x="50%" y="70%" font-size="48" fill="white" font-family="Arial" text-anchor="middle">아리아</text></svg>',
+    img: '이미지/아리아.jpg',
     desc: '전열에서 리듬을 주도하는 카리스마 딜러.',
     traits: { 성격: '활발', 원형: '영웅', 역할: '딜러', 공격: '물리', 배치: '전열' },
   },
   {
     id: 'noah',
     name: '노아',
-    img: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800"><rect width="100%" height="100%" fill="%23111827"/><rect x="80" y="80" width="440" height="640" rx="40" fill="%2306b6d4"/><text x="50%" y="70%" font-size="48" fill="white" font-family="Arial" text-anchor="middle">노아</text></svg>',
+    img: '이미지/노아.jpg',
     desc: '상처를 끌어안고 아군을 지키는 수호의 방패.',
     traits: { 성격: '우울', 원형: '보호자', 역할: '탱커', 공격: '물리', 배치: '중열' },
   },
   {
     id: 'joker',
     name: '조커',
-    img: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800"><rect width="100%" height="100%" fill="%23111827"/><circle cx="300" cy="280" r="160" fill="%23eab308"/><text x="50%" y="70%" font-size="48" fill="black" font-family="Arial" text-anchor="middle">조커</text></svg>',
+    img: '이미지/조커.jpg',
     desc: '혼돈을 유머로 비트는 트릭스터.',
     traits: { 성격: '광기', 원형: '트릭스터', 역할: '딜러', 공격: '마법', 배치: '중열' },
   },
   {
     id: 'eve',
     name: '이브',
-    img: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800"><rect width="100%" height="100%" fill="%23111827"/><rect x="120" y="120" width="360" height="560" rx="30" fill="%23f43f5e"/><text x="50%" y="70%" font-size="48" fill="white" font-family="Arial" text-anchor="middle">이브</text></svg>',
+    img: '이미지/이브.jpg',
     desc: '선의를 지키는 순수한 힐 서포터.',
     traits: { 성격: '순수', 원형: '보호자', 역할: '서포터', 공격: '마법', 배치: '후열' },
   },
@@ -251,7 +252,7 @@ function renderResult(match){
     <div class="result">
       <div class="portrait">
         <div class="desc" style="margin-bottom:8px">${character.desc}</div>
-        <img alt="${character.name}" src="${character.img}"/>
+        <img alt="${character.name}" src="${character.img}" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'600\' height=\'800\'><rect width=\'100%\' height=\'100%\' fill=\'%23111827\'/><text x=\'50%\' y=\'55%\' font-size=\'42\' fill=\'%23cbd5e1\' font-family=\'Arial\' text-anchor=\'middle\'>이미지 없음</text></svg>'"/>
         <div class="name">${character.name}</div>
       </div>
       <div>
@@ -344,3 +345,4 @@ renderStart();
 </script>
 </body>
 </html>
+
