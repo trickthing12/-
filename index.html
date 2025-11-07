@@ -25,7 +25,7 @@
     color: var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
   }
   .wrap { min-height: 100%; display:flex; align-items:center; justify-content:center; padding: 24px; }
-  .card { width: min(860px, 96vw); background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01)); border: 1px solid rgba(255,255,255,.08); border-radius: 18px; box-shadow: 0 20px 80px rgba(0,0,0,.35); }
+  .card { width: min(860px, 96vw); background: #ffffff; color: #111827; border: 1px solid rgba(0,0,0,.1); border-radius: 18px; box-shadow: 0 20px 80px rgba(0,0,0,.25); }
   .header { padding: 28px 28px 0 28px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .brand { display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.3px; }
   .brand .dot { width:10px; height:10px; border-radius:50%; background: var(--accent); box-shadow:0 0 22px var(--accent); }
@@ -65,15 +65,15 @@
   body{ position: relative; }
 
   body::before{
-    content:"";
-    position: fixed;
-    inset: 0;
-    z-index: 0;           /* 핵심 */
-    pointer-events: none;
-    background: url("이미지/배경.png") center/cover no-repeat fixed; /* 확장자/대소문자 점검 */
-    filter: brightness(.6) saturate(1.05);
+  content:"";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: url("이미지/배경.png") center/cover no-repeat fixed;
+  filter: brightness(1.15) saturate(1.2);   /* ← 더 밝고 선명하게 */
   }
-
+  
   .card{ position: relative; z-index: 1; }
 
 </style>
@@ -82,7 +82,7 @@
 <div class="wrap">
   <div class="card" id="app">
     <div class="header">
-      <div class="brand"><span class="dot"></span> 트릭컬 사도 리쿠르팅</div>
+      <div class="brand"><span class="dot"></span> 트릭컬 최애 사도 뽑기</div>
       <div class="mutetext">클라이언트 측 설문 · 저장 안 함</div>
     </div>
     <div class="body" id="view">
