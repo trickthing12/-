@@ -56,7 +56,7 @@
 
   .body { padding: 80px 28px 28px 28px; text-align: center; }
   .title { font-size: clamp(22px, 3.5vw, 30px); font-weight: 800; line-height:1.2; }
-  .subtitle { margin-top: 10px; color: var(--muted); }
+  .subtitle { margin-top: 10px; color: #000000; }
   .btn {
     display:inline-flex; align-items:center; justify-content:center;
     background: linear-gradient(180deg, var(--accent), #6d28d9);
@@ -99,11 +99,11 @@
 <script>
 // 질문지와 캐릭터 데이터 동일
 const QUESTIONS = [
-  {id:'personality',title:'Q1. 친구가 위험에 빠졌을 때, 당신은 어떻게 행동하나요?',options:[
+  {id:'personality',title:'Q1. 위험에 빠졌을 때, 당신은 어떻게 행동하나요?',options:[
     {label:'미친 듯이 돌진해 상황을 바꾼다',value:'광기'},
     {label:'모두를 위해 자신을 희생한다',value:'우울'},
     {label:'감정을 누르고 냉정하게 판단한다',value:'냉정'},
-    {label:'그를 믿고 주저 없이 달려간다',value:'순수'},
+    {label:'동료를 믿고 주저 없이 달려간다',value:'순수'},
     {label:'모두를 격려하며 분위기를 이끈다',value:'활발'},
   ]},
   {id:'archetype',title:'Q2. 당신이 이상적으로 되고 싶은 모습은?',options:[
@@ -114,8 +114,8 @@ const QUESTIONS = [
     {label:'상처 입은 이를 보듬는 보호자',value:'보호자'},
   ]},
   {id:'role',title:'Q3. 전투가 시작되면, 당신은 어떤 역할이 편합니까?',options:[
-    {label:'가장 먼저 적을 베어 치는 공격수',value:'딜러'},
-    {label:'아군의 상태를 살피며 지원',value:'서포터'},
+    {label:'가장 먼저 적에게 돌격하는 공격수',value:'딜러'},
+    {label:'아군의 상태를 살피는 지원자',value:'서포터'},
     {label:'한 걸음 앞에서 파티를 지키는 방패',value:'탱커'},
   ]},
   {id:'attack',title:'Q4. 힘의 근원은 어디서 온다고 보나요?',options:[
@@ -146,7 +146,7 @@ function setView(n){view.innerHTML=n;}
 function renderStart(){
   setView(html`
     <div class="center">
-      <div class="title">꾜주님! 의 업무를 도와드릴 사도를 알려드릴게요!</div>
+      <div class="title">꾜주님! 최애 사도를 알려드릴게요!</div>
       <div class="subtitle">버튼을 누르면 5문항 설문이 시작됩니다.</div>
       <div style="margin-top:18px"><button class="btn" onclick="startQuiz()">사도 모집 시작하기</button></div>
       <div class="hr"></div>
