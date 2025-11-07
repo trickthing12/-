@@ -242,12 +242,69 @@ const CHARACTERS = [
   {id:'아사나',name:'아사나',img:'이미지/아사나.jpg',desc:'유연한 요가 연구가',traits:{성격:'우울',원형:'',역할:'탱커',공격:'물리',배치:'전열'}},
 ];
 
+// 가중치
 const WEIGHTS = {성격:5, 원형:4, 역할:3, 공격:2, 배치:1};
+
+// 상태
 let answers={}, step='start';
 const view=document.getElementById('view');
 function html(s,...v){return s.reduce((a,b,i)=>a+b+(v[i]??''),'');}
 function setView(n){view.innerHTML=n;}
 
+// === 추가: 포함/와일드카드 매칭 헬퍼 ===
+function includesTrait(charVal, answerVal){
+  // 다중값(배열) 지원
+  if (Array.isArray(charVal)) return charVal.includes(answerVal);
+
+  // 성격 공명 = 모든 성격 허용
+  if (typeof charVal === 'string' && charVal === '공명'){
+    return ['광기','우울','냉정','순수','활발'].includes(answerVal);
+  }
+
+  // 배치 와일드카드 표기 허용
+  if (typeof charVal === 'string' && ['모든','모든 열','ALL','Any','any'].includes(charVal)){
+    return true;
+  }
+
+  // 일반 단일값
+  return charVal === answerVal;
+}
+
+// === 교체: 점수 계산 ===
+function scoreFor(c, profile){
+  let sum = 0;
+  for (const key of Object.keys(WEIGHTS)){
+    if (includesTrait(c.traits[key], profile[key])) sum += WEIGHTS[key];
+  }
+  return sum;
+}
+
+// === 교체: 매칭 로직 ===
+function matchCharacter(profile){
+  // 1) 정확일치: 배열/공명/모든 열 허용
+  const exact = CHARACTERS.find(c =>
+    Object.keys(WEIGHTS).every(k => includesTrait(c.traits[k], profile[k]))
+  );
+  if (exact) return { character: exact, score: scoreFor(exact, profile), profile };
+
+  // 2) 가중 유사도 + 특이도(구체적일수록 우선)
+  let best=null, bestScore=-Infinity, bestSpec=-Infinity;
+  for (const c of CHARACTERS){
+    const s = scoreFor(c, profile);
+    const spec = Object.keys(WEIGHTS).reduce((acc,k)=>{
+      const v = c.traits[k];
+      if (Array.isArray(v)) return acc + 1/Math.max(1,v.length);         // 값 많을수록 특이도 낮음
+      if (typeof v === 'string' && (v === '공명' || ['모든','모든 열','ALL','Any','any'].includes(v))) return acc + 0.25; // 와일드카드 낮게
+      return acc + 1;                                                     // 단일값은 높게
+    },0);
+    if (s > bestScore || (s === bestScore && spec > bestSpec)){
+      best = c; bestScore = s; bestSpec = spec;
+    }
+  }
+  return { character: best, score: bestScore, profile };
+}
+
+// 화면 렌더
 function renderStart(){
   setView(html`
     <div class="center">
@@ -297,23 +354,13 @@ function renderResult(match){
 
 function startQuiz(){answers={};renderQuestion(0);}
 function choose(i,j){
-  const q=QUESTIONS[i];answers[q.idMap??{
-    personality:'성격',archetype:'원형',role:'역할',attack:'공격',line:'배치'
-  }[q.id]]=q.options[j].value;
-  if(i+1<QUESTIONS.length)renderQuestion(i+1);
+  const q=QUESTIONS[i];
+  const mapKey = { personality:'성격', archetype:'원형', role:'역할', attack:'공격', line:'배치' }[q.id];
+  answers[mapKey]=q.options[j].value;
+  if(i+1<QUESTIONS.length) renderQuestion(i+1);
   else renderResult(matchCharacter(answers));
 }
 function restart(){renderStart();}
-function matchCharacter(p){
-  const exact=CHARACTERS.find(c=>Object.entries(c.traits).every(([k,v])=>p[k]===v));
-  if(exact)return{character:exact,score:scoreFor(exact,p),profile:p};
-  let best=null,bestScore=-1;
-  for(const c of CHARACTERS){
-    const s=scoreFor(c,p);if(s>bestScore){bestScore=s;best=c;}
-  }
-  return{character:best,score:bestScore,profile:p};
-}
-function scoreFor(c,p){return Object.keys(WEIGHTS).reduce((s,k)=>s+(c.traits[k]===p[k]?WEIGHTS[k]:0),0);}
 renderStart();
 </script>
 </body>
