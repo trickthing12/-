@@ -235,7 +235,7 @@ const ID_QUESTIONS = [
       { l: '"와! 신기해!" 일단 만져보고 챙긴다.', v: { race:'요정', village:'에르피엔', personality:'순수', role:'지원가' } },
       { l: '"함정일지 몰라." 마력 흐름을 분석한다.', v: { race:'엘프', village:'모나티움', personality:'냉정', role:'지원가' } },
       { l: '"위험할 수 있어." 동료들 앞을 경계한다.', v: { race:'용족', village:'정령산', personality:'활발', role:'탱커' } },
-      { l: '"재밌겠는데?" 누군가 밟도록 흙으로 덮는다.', v: { race:'마녀', village:'유령늪', personality:'광기', role:'딜러' } }
+      { l: '"재밌겠는데?" 누군가 밟도록 흙으로 덮는다.', v: { race:'마녀', village:'유령 늪', personality:'광기', role:'딜러' } }
     ]
   },
   {
@@ -252,7 +252,7 @@ const ID_QUESTIONS = [
     opts: [
       { l: '포근하고 익숙한 곳에서 늘어지게 낮잠 자기.', v: { race:'수인', village:'수인 숲', personality:'우울', role:'탱커' } },
       { l: '시끌벅적한 곳에 가서 정신없이 놀기.', v: { race:'요정', village:'에르피엔', personality:'활발', role:'딜러' } },
-      { l: '아무도 없는 어두운 곳에서 혼자 취미 즐기기.', v: { race:'유령', village:'유령늪', personality:'우울', role:'지원가' } },
+      { l: '아무도 없는 어두운 곳에서 혼자 취미 즐기기.', v: { race:'유령', village:'유령 늪', personality:'우울', role:'지원가' } },
       { l: '밀려있던 기록물들을 정리하며 지식 쌓기.', v: { race:'미스틱', village:'벨라티엔', personality:'냉정', role:'지원가' } }
     ]
   },
@@ -280,7 +280,7 @@ const ID_QUESTIONS = [
       { l: '있는 힘껏 바위를 밀거나 부숴버린다.', v: { race:'용족', village:'정령산', personality:'활발', role:'탱커' } },
       { l: '바위가 녹아내리는 특수 용액을 붓는다.', v: { race:'마녀', village:'지하 동굴', personality:'냉정', role:'딜러' } },
       { l: '"도와줘~!" 친구들을 잔뜩 불러와서 같이 치운다.', v: { race:'요정', village:'에르피엔', personality:'순수', role:'지원가' } },
-      { l: '그냥 물리법칙을 무시하고 바위 통과해서 지나간다.', v: { race:'유령', village:'유령늪', personality:'우울', role:'지원가' } }
+      { l: '그냥 물리법칙을 무시하고 바위 통과해서 지나간다.', v: { race:'유령', village:'유령 늪', personality:'우울', role:'지원가' } }
     ]
   },
   {
@@ -315,7 +315,7 @@ const ID_QUESTIONS = [
     opts: [
       { l: '머리보다 몸이 먼저 나가서 가끔 사고를 친다.', v: { race:'수인', village:'수인 숲', personality:'활발', role:'딜러' } },
       { l: '융통성이 부족하고 계산이 틀어지면 스트레스를 받는다.', v: { race:'엘프', village:'모나티움', personality:'냉정', role:'지원가' } },
-      { l: '감정 기복이 심하고 한 번 삐치면 오래간다.', v: { race:'유령', village:'유령늪', personality:'우울', role:'딜러' } },
+      { l: '감정 기복이 심하고 한 번 삐치면 오래간다.', v: { race:'유령', village:'유령 늪', personality:'우울', role:'딜러' } },
       { l: '세상 물정을 너무 몰라서 남의 말을 쉽게 믿는다.', v: { race:'정령', village:'에르피엔', personality:'순수', role:'탱커' } }
     ]
   }
@@ -510,9 +510,9 @@ function showIdResult() {
   const rPerso = getMax(id_scores.personality);
   const rRole = getMax(id_scores.role);
 
-  const imgRace = `이미지/캐릭터/${rRace}.png`;
-  const imgPerso = `이미지/성격/${rPerso}.png`;
-  const imgVillage = `이미지/장소/${rVillage}.png`;
+  const imgRace = `이미지/${rRace}.png`;
+  const imgPerso = `이미지/${rPerso}.png`;
+  const imgVillage = `이미지/${rVillage}.png`;
 
   setView(html`
     <div class="identity-result-box">
@@ -546,7 +546,7 @@ function showIdResult() {
       
       <div style="font-size:18px; line-height:1.6; background:#f9fafb; padding:25px; border-radius:12px; margin-top:20px; border:1px solid #e5e7eb; word-break: keep-all;">
         당신은 <strong>${rVillage}</strong>에 거주하는 <strong>${rPerso}</strong> 성향의 <strong>${rRace} ${rRole}</strong>입니다!<br>
-        엘리아스 세계관에서 당신의 엉뚱한 활약을 기대할게요!
+        엘리아스에서 당신의 엉뚱한 활약을 기대할게요!
       </div>
       
       <button class="btn" style="margin-top:25px;" onclick="renderMain()">처음으로 돌아가기</button>
