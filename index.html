@@ -360,10 +360,6 @@ function renderResult(match){
       </div>
       <div>
         <div class="title">당신의 최애 사도 후보</div>
-        <div class="subtitle" style="margin-bottom:12px;">유사도 가중 합: ${score}</div>
-        <div class="badgebar">
-          ${Object.entries(profile).map(([k,v])=>`<span class="badge">${k}: ${v}</span>`).join('')}
-        </div>
         <div class="hr"></div>
         <button class="btn" onclick="restart()">설문 다시 시작하기</button>
       </div>
