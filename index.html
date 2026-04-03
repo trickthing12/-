@@ -66,11 +66,12 @@
   .id-badge { background: var(--accent); color: white; padding: 6px 14px; border-radius: 999px; font-weight: 700; font-size: 14px; margin: 0 4px; }
   .hr { height:1px; background: rgba(0,0,0,.1); margin:20px 0; }
 
-  /* 갤러그 전용 CSS */
+  /* 갤러그 전용 CSS (터치 스크롤 방지 추가) */
   #game-container {
       position: relative; width: 100%; height: 600px; max-height: 70vh; 
       background-color: #111; border-radius: 12px; overflow: hidden;
       margin-top: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5) inset;
+      touch-action: none; /* 모바일에서 버튼 누를 때 화면 흔들림 방지 */
   }
   canvas { display: block; width: 100%; height: 100%; }
   .game-panel {
@@ -83,9 +84,9 @@
       width: 60px; height: 60px; background-color: rgba(255,255,255,0.2);
       border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; color: white;
       font-size: 24px; display: flex; justify-content: center; align-items: center;
-      user-select: none; -webkit-user-select: none;
+      user-select: none; -webkit-user-select: none; cursor: pointer;
   }
-  .control-btn:active { background-color: rgba(255,255,255,0.6); }
+  .control-btn:active { background-color: rgba(255,255,255,0.6); transform: scale(0.95); }
 </style>
 </head>
 <body>
@@ -103,7 +104,7 @@
 
 <script>
 // ==========================================
-// [1] 최애 사도 진단용 데이터 (완전 복구)
+// [1] 최애 사도 진단용 데이터
 // ==========================================
 const QUESTIONS = [
   {id:'personality',title:'Q1. 위험에 빠졌을 때, 당신은 어떻게 행동하나요?',options:[
@@ -123,7 +124,6 @@ const QUESTIONS = [
   ]}
 ];
 
-// 기존 80여 개 사도 데이터 전량 복구
 const CHARACTERS = [
   {id:'다야',name:'다야',img:'이미지/다야.png',desc:'용족의 수장',traits:{성격:'순수',원형:'용족',역할:'딜러',공격:'마법',배치:'후열'}},
   {id:'이프리트',name:'이프리트',img:'이미지/이프리트.png',desc:'라떼 정령',traits:{성격:'광기',원형:'정령',역할:'딜러',공격:'마법',배치:'전열'}},
@@ -246,7 +246,7 @@ const CHARACTERS = [
 const WEIGHTS = {성격:5, 원형:4, 역할:3, 공격:2, 배치:1};
 
 // ==========================================
-// [2] 정체성 찾기 다중 가중치 데이터 (10문항 완벽 구성)
+// [2] 정체성 찾기 다중 가중치 데이터
 // ==========================================
 const ID_QUESTIONS = [
   {
@@ -342,12 +342,13 @@ const ID_QUESTIONS = [
 ];
 
 // ==========================================
-// [2] 렌더링 및 유틸리티 영역
+// [3] 렌더링 및 유틸리티 영역
 // ==========================================
 const view = document.getElementById('view');
 function html(s,...v){return s.reduce((a,b,i)=>a+b+(v[i]??''),'');}
 function setView(n){view.innerHTML=n;}
 
+// 리소스
 const bgImg = new Image(); bgImg.src = '이미지/모나티움.PNG'; 
 const imgIdle = new Image(); imgIdle.src = '이미지/rone.png'; 
 const imgMove = new Image(); imgMove.src = '이미지/move.png'; 
@@ -372,7 +373,7 @@ function stopAllBgm() {
 }
 
 // ==========================================
-// [3] 메인 메뉴 (3개 선택지)
+// [4] 메인 메뉴 (3개 선택지)
 // ==========================================
 function renderMain() {
   stopAllBgm();
@@ -399,17 +400,15 @@ function renderMain() {
 }
 
 // ==========================================
-// [4] 최애 사도 진단 로직
+// [5] 최애 사도 진단 로직
 // ==========================================
 let answers = {};
-
 function includesTrait(charVal, answerVal){
   if (Array.isArray(charVal)) return charVal.includes(answerVal);
   if (typeof charVal === 'string' && charVal === '공명') return ['광기','우울','냉정','순수','활발'].includes(answerVal);
   if (typeof charVal === 'string' && ['모든','모든 열','ALL','Any','any'].includes(charVal)) return true;
   return charVal === answerVal;
 }
-
 function scoreFor(c, profile){
   let sum = 0;
   for (const key of Object.keys(WEIGHTS)){
@@ -417,18 +416,16 @@ function scoreFor(c, profile){
   }
   return sum;
 }
-
 function matchCharacter(profile){
   const exact = CHARACTERS.find(c => Object.keys(WEIGHTS).every(k => includesTrait(c.traits[k], profile[k])));
   if (exact) return { character: exact, score: scoreFor(exact, profile), profile };
-
   let best=null, bestScore=-Infinity, bestSpec=-Infinity;
   for (const c of CHARACTERS){
     const s = scoreFor(c, profile);
     const spec = Object.keys(WEIGHTS).reduce((acc,k)=>{
       const v = c.traits[k];
       if (Array.isArray(v)) return acc + 1/Math.max(1,v.length);
-      if (typeof v === 'string' && (v === '공명' || ['모든','모든 열','ALL','Any','any'].includes(v))) return acc + 0.25;
+      if (typeof v === 'string' && (v === '공명' || ['모든','모든 열'].includes(v))) return acc + 0.25;
       return acc + 1;
     },0);
     if (s > bestScore || (s === bestScore && spec > bestSpec)){
@@ -437,14 +434,12 @@ function matchCharacter(profile){
   }
   return { character: best };
 }
-
 function startFavQuiz() {
   answers = {};
   const bgm = document.getElementById('bgm');
   if(bgm) { bgm.currentTime = 0; bgm.play().catch(e=>{}); }
   renderFavQuestion(0);
 }
-
 function renderFavQuestion(i) {
   const q = QUESTIONS[i];
   setView(html`
@@ -457,16 +452,13 @@ function renderFavQuestion(i) {
     </div>
   `);
 }
-
 function chooseFav(i, j) {
   const q = QUESTIONS[i];
   const mapKey = { personality:'성격', archetype:'원형', role:'역할', attack:'공격', line:'배치' }[q.id];
   answers[mapKey] = q.options[j].value;
-  
   if(i+1 < QUESTIONS.length) renderFavQuestion(i+1);
   else renderFavTransition(matchCharacter(answers));
 }
-
 function renderFavTransition(matchInfo) {
   const bgm = document.getElementById('bgm');
   if(bgm) bgm.pause();
@@ -479,7 +471,6 @@ function renderFavTransition(matchInfo) {
   `);
   setTimeout(() => renderFavResult(matchInfo), 3500);
 }
-
 function renderFavResult(match){
   setView(html`
     <div class="result">
@@ -496,11 +487,10 @@ function renderFavResult(match){
 }
 
 // ==========================================
-// [5] 정체성 찾기 로직
+// [6] 정체성 찾기 로직
 // ==========================================
 let id_idx = 0;
 let id_scores = { race:{}, village:{}, personality:{}, role:{} };
-
 function startIdQuiz() {
   id_idx = 0;
   id_scores = { race:{}, village:{}, personality:{}, role:{} };
@@ -508,7 +498,6 @@ function startIdQuiz() {
   if(bgmId) { bgmId.currentTime = 0; bgmId.play().catch(e=>{}); }
   renderIdQuestion();
 }
-
 function renderIdQuestion() {
   const q = ID_QUESTIONS[id_idx];
   setView(html`
@@ -516,32 +505,23 @@ function renderIdQuestion() {
       <div class="pill">Q. ${id_idx + 1} / ${ID_QUESTIONS.length}</div>
       <div class="qtitle">${q.q}</div>
       <div class="opts">
-        ${q.opts.map((o, j) => `
-          <button class="opt" onclick="chooseId(${id_idx}, ${j})">${o.l}</button>
-        `).join('')}
+        ${q.opts.map((o, j) => `<button class="opt" onclick="chooseId(${id_idx}, ${j})">${o.l}</button>`).join('')}
       </div>
     </div>
   `);
 }
-
 function chooseId(i, j) {
   const valObj = ID_QUESTIONS[i].opts[j].v;
   Object.keys(valObj).forEach(cat => {
     id_scores[cat][valObj[cat]] = (id_scores[cat][valObj[cat]] || 0) + 1;
   });
-  
   id_idx++;
-  if(id_idx < ID_QUESTIONS.length) {
-    renderIdQuestion();
-  } else {
-    renderIdTransition();
-  }
+  if(id_idx < ID_QUESTIONS.length) renderIdQuestion();
+  else renderIdTransition();
 }
-
 function renderIdTransition() {
   const bgmId = document.getElementById('bgm_id');
   if(bgmId) bgmId.pause();
-  
   setView(html`
     <div style="text-align: center; padding: 40px 0;">
       <div class="title" style="margin-bottom: 20px;">엘리아스 신분증 발급 중...</div>
@@ -549,17 +529,14 @@ function renderIdTransition() {
       <audio src="음성/픽업.mp3" autoplay></audio>
     </div>
   `);
-  
   setTimeout(() => showIdResult(), 3500);
 }
-
 function showIdResult() {
   const getMax = (obj) => Object.keys(obj).reduce((a, b) => obj[a] > obj[b] ? a : b, Object.keys(obj)[0]);
   const rRace = getMax(id_scores.race);
   const rVillage = getMax(id_scores.village);
   const rPerso = getMax(id_scores.personality);
   const rRole = getMax(id_scores.role);
-
   const imgRace = `이미지/${rRace}.png`;
   const imgPerso = `이미지/${rPerso}.png`;
   const imgVillage = `이미지/${rVillage}.PNG`;
@@ -568,7 +545,6 @@ function showIdResult() {
     <div class="identity-result-box">
       <div class="title">당신의 엘리아스 정체성</div>
       <div class="hr"></div>
-      
       <div class="id-result-images">
         <div class="id-image-item">
           <div class="id-image-label">캐릭터 (종족)</div>
@@ -586,26 +562,20 @@ function showIdResult() {
           <div class="id-image-value">${rVillage}</div>
         </div>
       </div>
-
       <div style="margin-top: 10px;">
-        <span class="id-badge">#${rRace}</span>
-        <span class="id-badge">#${rVillage}</span>
-        <span class="id-badge">#${rPerso}</span>
-        <span class="id-badge">#${rRole}</span>
+        <span class="id-badge">#${rRace}</span><span class="id-badge">#${rVillage}</span><span class="id-badge">#${rPerso}</span><span class="id-badge">#${rRole}</span>
       </div>
-      
       <div style="font-size:18px; line-height:1.6; background:#f9fafb; padding:25px; border-radius:12px; margin-top:20px; border:1px solid #e5e7eb; word-break: keep-all;">
         당신은 <strong>${rVillage}</strong>에 거주하는 <strong>${rPerso}</strong> 성향의 <strong>${rRace} ${rRole}</strong>입니다!<br>
         엘리아스에서 당신의 엉뚱한 활약을 기대할게요!
       </div>
-      
       <button class="btn" style="margin-top:25px;" onclick="renderMain()">처음으로 돌아가기</button>
     </div>
   `);
 }
 
 // ==========================================
-// [6] 돈까스 갤러그 시스템 통합
+// [7] 돈까스 갤러그 시스템 통합 (수정된 안전 로직)
 // ==========================================
 let isGameActive = false;
 let score = 0;
@@ -622,13 +592,21 @@ const player = {
         if (this.state === 'move') currentImg = imgMove;
         else if (this.state === 'attack') currentImg = imgAttack;
         else if (this.state === 'dead') currentImg = imgDead;
-        if (currentImg.complete) ctx.drawImage(currentImg, this.x - this.width/2, this.y - this.height/2, this.width, this.height);
+
+        // Fallback: 이미지가 없을 경우 네모로 대체하여 무조건 보이게 처리
+        if (currentImg.complete && currentImg.naturalWidth !== 0) {
+            ctx.drawImage(currentImg, this.x - this.width/2, this.y - this.height/2, this.width, this.height);
+        } else {
+            ctx.fillStyle = '#8b5cf6';
+            ctx.fillRect(this.x - 40, this.y - 40, 80, 80);
+        }
     },
     update() {
         if (!isGameActive) return;
         this.x += this.moveDir * this.speed;
         if (this.x < this.width/2) this.x = this.width/2;
         if (this.x > canvas.width - this.width/2) this.x = canvas.width - this.width/2;
+        
         if (this.state === 'attack') {
             this.attackTimer--;
             if (this.attackTimer <= 0) this.state = this.moveDir !== 0 ? 'move' : 'idle';
@@ -674,11 +652,6 @@ function initGalaga() {
 
     canvas = document.getElementById('gameCanvas');
     ctx = canvas.getContext('2d');
-    canvas.width = canvas.parentElement.clientWidth;
-    canvas.height = canvas.parentElement.clientHeight;
-    
-    player.x = canvas.width / 2;
-    player.y = canvas.height - 100;
 
     document.getElementById('btn-start').addEventListener('click', startGalagaGame);
     document.getElementById('btn-restart').addEventListener('click', startGalagaGame);
@@ -690,7 +663,6 @@ function initGalaga() {
         if (player.moveDir !== dir && dir !== 0) playSound(moveSound);
         player.moveDir = dir;
     };
-
     const moveLeft = (e) => { e.preventDefault(); handleMove(-1); };
     const moveRight = (e) => { e.preventDefault(); handleMove(1); };
     const stopMove = (e) => { e.preventDefault(); handleMove(0); };
@@ -701,6 +673,7 @@ function initGalaga() {
     btnRight.addEventListener('mousedown', moveRight); btnRight.addEventListener('mouseup', stopMove); btnRight.addEventListener('mouseleave', stopMove);
 }
 
+// 키보드 조작 (한 번만 등록)
 window.addEventListener('keydown', (e) => {
     if (!isGameActive) return;
     if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') player.moveDir = -1;
@@ -713,8 +686,17 @@ window.addEventListener('keyup', (e) => {
 });
 
 function startGalagaGame() {
+    if(animationId) cancelAnimationFrame(animationId); // 혹시 모를 중복 루프 제거
+    
+    // 캔버스 크기 확실하게 지정 (DOM 생성이 조금 늦어지는 경우 방지)
+    canvas.width = canvas.parentElement.clientWidth || 500;
+    canvas.height = canvas.parentElement.clientHeight || 600;
+
     score = 0; enemies = []; bullets = []; frameCount = 0;
-    player.x = canvas.width / 2; player.state = 'idle'; player.moveDir = 0;
+    player.x = canvas.width / 2; 
+    player.y = canvas.height - 100; // y축 위치 초기화 보장
+    player.state = 'idle'; 
+    player.moveDir = 0;
 
     document.getElementById('start-panel').classList.add('hidden');
     document.getElementById('game-over-panel').classList.add('hidden');
@@ -732,8 +714,8 @@ function startGalagaGame() {
 function gameLoop() {
     if (!isGameActive) return;
 
-    if (bgImg.complete) ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (bgImg.complete && bgImg.naturalWidth !== 0) ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+    else { ctx.fillStyle = '#111'; ctx.fillRect(0, 0, canvas.width, canvas.height); } // Fallback BG
     
     player.update();
     player.draw();
@@ -765,13 +747,23 @@ function gameLoop() {
         }
         e.y += e.speed;
 
-        if (imgEnemy.complete) ctx.drawImage(imgEnemy, e.x - e.width/2, e.y - e.height/2, e.width, e.height);
+        // 적 이미지 Fallback
+        if (imgEnemy.complete && imgEnemy.naturalWidth !== 0) {
+            ctx.drawImage(imgEnemy, e.x - e.width/2, e.y - e.height/2, e.width, e.height);
+        } else {
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(e.x - e.width/2, e.y - e.height/2, e.width, e.height);
+        }
 
+        // 1. 캐릭터 충돌 판정 (Hitbox 축소 수정됨)
+        let hitRadius = 35; // 이미지(180) 대비 실제 닿는 면적을 대폭 줄여서 게임 밸런스 정상화
         let distToPlayer = Math.hypot(player.x - e.x, player.y - e.y);
-        if (distToPlayer < (player.height/2 + e.height/2 - 15)) { 
+        if (distToPlayer < (hitRadius + e.height/2)) { 
             gameOver(); return; 
         }
 
+        // 2. 총알 충돌 판정
+        let destroyed = false;
         for (let j = bullets.length - 1; j >= 0; j--) {
             let b = bullets[j];
             let distToBullet = Math.hypot(b.x - e.x, b.y - e.y);
@@ -779,9 +771,16 @@ function gameLoop() {
                 score += 10;
                 document.getElementById('score-display').innerText = `Score: ${score}`;
                 playSound(hitSound);
-                enemies.splice(i, 1); bullets.splice(j, 1); break;
+                enemies.splice(i, 1); bullets.splice(j, 1); 
+                destroyed = true; // 이중 삭제 에러 방지용
+                break;
             }
         }
+        
+        // 총알에 맞아 파괴되었다면 아래 화면 밖 검사를 건너뜀 (에러 해결 핵심)
+        if(destroyed) continue;
+
+        // 3. 화면 밖 삭제
         if (e && e.y > canvas.height + 50) enemies.splice(i, 1);
     }
 
@@ -793,7 +792,7 @@ function gameOver() {
     cancelAnimationFrame(animationId);
     player.state = 'dead';
     
-    if (bgImg.complete) ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+    if (bgImg.complete && bgImg.naturalWidth !== 0) ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
     player.draw(); 
 
     const bgmGame = document.getElementById('bgm_game');
@@ -807,7 +806,6 @@ function gameOver() {
 
 // 앱 시작
 renderMain();
-
 </script>
 </body>
 </html>
