@@ -2,15 +2,15 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>트릭컬 엘리아스 진단소</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" />
+<title>엘리아스 아케이드</title>
 <style>
   /* --- 공통 CSS --- */
   :root {
     --bg: #0b0f14; --panel: #111827; --text: #111827; --muted: #6b7280; --accent: #8b5cf6; --btn: #1f2937;
   }
   * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; }
+  html, body { height: 100%; margin: 0; touch-action: manipulation; }
   body {
     background: var(--bg); color: var(--text);
     font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -21,7 +21,7 @@
     background: url("이미지/배경.png") center/cover no-repeat fixed;
   }
   .wrap { min-height: 100%; display:flex; align-items:center; justify-content:center; padding:24px; position: relative; z-index: 1;}
-  .card { width: min(860px, 96vw); background: #ffffff; border-radius: 18px; box-shadow: 0 20px 80px rgba(0,0,0,.25); padding: 40px; position: relative; }
+  .card { width: min(860px, 96vw); background: #ffffff; border-radius: 18px; box-shadow: 0 20px 80px rgba(0,0,0,.25); padding: 40px; position: relative; overflow: hidden;}
   
   .header { display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 800; font-size: 24px; color: var(--accent); margin-bottom: 20px;}
   .header .dot { width:10px; height:10px; border-radius:50%; background: var(--accent); box-shadow:0 0 10px var(--accent); }
@@ -43,36 +43,56 @@
   .pill { padding:4px 12px; border-radius:999px; background:rgba(139,92,246,.15); color:#6d28d9; font-size:14px; font-weight: 800; display: inline-block; }
 
   /* 메인 메뉴 CSS */
-  .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
-  @media (max-width: 600px) { .grid-menu { grid-template-columns: 1fr; } }
-  .menu-btn { padding: 30px; border-radius: 16px; border: 2px solid #f3f4f6; background: #f9fafb; cursor: pointer; transition: all 0.2s; text-align: center; }
+  .grid-menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-top: 30px; }
+  .menu-btn { padding: 30px; border-radius: 16px; border: 2px solid #f3f4f6; background: #f9fafb; cursor: pointer; transition: all 0.2s; text-align: center; display:flex; flex-direction:column; justify-content:center;}
   .menu-btn:hover { border-color: var(--accent); background: #f5f3ff; transform: translateY(-5px); box-shadow: 0 10px 20px rgba(139,92,246,0.1); }
   .menu-btn h3 { margin: 0 0 10px 0; color: var(--accent); font-size: 20px; font-weight: 800; }
   .menu-btn p { color: #4b5563; font-size: 14px; line-height: 1.5; margin-top: 10px; }
 
-  /* 최애 사도 결과 CSS */
+  /* 진단 결과 CSS */
   .result { display:grid; grid-template-columns:330px 1fr; gap:20px; text-align: left; }
   @media (max-width:780px){ .result{grid-template-columns:1fr;} }
   .portrait img { width:100%; border-radius:12px; border:1px solid rgba(0,0,0,.1); }
   .name { margin-top:10px; font-size:24px; font-weight:800; }
   .desc { color:#6b7280; margin-bottom: 20px;}
 
-  /* 정체성 결과 전용 3분할 이미지 CSS */
+  /* 정체성 결과 전용 CSS */
   .identity-result-box { text-align: center; background: #ffffff; }
   .id-result-images { display: flex; justify-content: space-around; gap: 10px; margin: 30px 0; }
   .id-image-item { flex: 1; text-align: center; background: #f9fafb; padding: 15px; border-radius: 12px; border: 1px solid #e5e7eb; }
   .id-image-item img { width: 100%; max-width: 150px; aspect-ratio: 1; object-fit: cover; border-radius: 12px; border: 2px solid #ddd6fe; margin-bottom: 10px; }
   .id-image-label { font-size: 12px; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
   .id-image-value { font-size: 18px; font-weight: 800; color: var(--text); }
-  
   .id-badge { background: var(--accent); color: white; padding: 6px 14px; border-radius: 999px; font-weight: 700; font-size: 14px; margin: 0 4px; }
   .hr { height:1px; background: rgba(0,0,0,.1); margin:20px 0; }
+
+  /* 갤러그 전용 CSS */
+  #game-container {
+      position: relative; width: 100%; height: 600px; max-height: 70vh; 
+      background-color: #111; border-radius: 12px; overflow: hidden;
+      margin-top: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5) inset;
+  }
+  canvas { display: block; width: 100%; height: 100%; }
+  .game-panel {
+      position: absolute; inset: 0; display: flex; flex-direction: column; 
+      justify-content: center; align-items: center; color: white; z-index: 10;
+      background-color: rgba(0,0,0,0.8); text-align: center;
+  }
+  .hidden { display: none !important; }
+  .control-btn {
+      width: 60px; height: 60px; background-color: rgba(255,255,255,0.2);
+      border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; color: white;
+      font-size: 24px; display: flex; justify-content: center; align-items: center;
+      user-select: none; -webkit-user-select: none;
+  }
+  .control-btn:active { background-color: rgba(255,255,255,0.6); }
 </style>
 </head>
 <body>
 
 <audio id="bgm" src="음성/최애사도.mp3" loop></audio>
 <audio id="bgm_id" src="음성/정체성.mp3" loop></audio>
+<audio id="bgm_game" src="이미지/bgm.mp3" loop></audio>
 
 <div class="wrap">
   <div class="card" id="app">
@@ -321,17 +341,43 @@ const ID_QUESTIONS = [
   }
 ];
 
-// --- 공통 렌더링 함수 ---
+// ==========================================
+// [2] 렌더링 및 유틸리티 영역
+// ==========================================
 const view = document.getElementById('view');
 function html(s,...v){return s.reduce((a,b,i)=>a+b+(v[i]??''),'');}
 function setView(n){view.innerHTML=n;}
 
-// --- 메인 메뉴 ---
+const bgImg = new Image(); bgImg.src = '이미지/모나티움.PNG'; 
+const imgIdle = new Image(); imgIdle.src = '이미지/rone.png'; 
+const imgMove = new Image(); imgMove.src = '이미지/move.png'; 
+const imgAttack = new Image(); imgAttack.src = '이미지/attack.png'; 
+const imgDead = new Image(); imgDead.src = '이미지/dead.png'; 
+const imgEnemy = new Image(); imgEnemy.src = '이미지/돈까스.png'; 
+
+const hitSound = new Audio('이미지/hit.mp3');
+const moveSound = new Audio('이미지/move.mp3');
+const gameOverSound = new Audio('이미지/gameover.mp3');
+
+function playSound(audio) {
+    audio.currentTime = 0;
+    audio.play().catch(e => console.log("Audio play error:", e));
+}
+
+function stopAllBgm() {
+    ['bgm', 'bgm_id', 'bgm_game'].forEach(id => {
+        const audio = document.getElementById(id);
+        if(audio) { audio.pause(); audio.currentTime = 0; }
+    });
+}
+
+// ==========================================
+// [3] 메인 메뉴 (3개 선택지)
+// ==========================================
 function renderMain() {
-  const bgm = document.getElementById('bgm');
-  const bgmId = document.getElementById('bgm_id');
-  if(bgm) bgm.pause();
-  if(bgmId) bgmId.pause();
+  stopAllBgm();
+  if(typeof animationId !== 'undefined') cancelAnimationFrame(animationId);
+  isGameActive = false;
 
   setView(html`
     <div class="title" style="margin-bottom:0;">교주님, 무엇을 도와드릴까요?</div>
@@ -344,12 +390,16 @@ function renderMain() {
         <h3>🆔 나의 정체성 찾기</h3>
         <p>엘리아스에 산다면?<br>종족, 마을, 성향을 알아봐요.</p>
       </div>
+      <div class="menu-btn" onclick="initGalaga()">
+        <h3>🎮 돈까스 갤러그</h3>
+        <p>쏟아지는 돈까스를 쏘아<br>최고 점수에 도전하세요!</p>
+      </div>
     </div>
   `);
 }
 
 // ==========================================
-// [3] 최애 사도 진단 로직 (원본 완벽 적용)
+// [4] 최애 사도 진단 로직
 // ==========================================
 let answers = {};
 
@@ -446,7 +496,7 @@ function renderFavResult(match){
 }
 
 // ==========================================
-// [4] 정체성 찾기 로직 (10문항 및 3분할 결과창)
+// [5] 정체성 찾기 로직
 // ==========================================
 let id_idx = 0;
 let id_scores = { race:{}, village:{}, personality:{}, role:{} };
@@ -554,8 +604,210 @@ function showIdResult() {
   `);
 }
 
+// ==========================================
+// [6] 돈까스 갤러그 시스템 통합
+// ==========================================
+let isGameActive = false;
+let score = 0;
+let animationId;
+let frameCount = 0;
+let enemies = [];
+let bullets = [];
+let canvas, ctx;
+
+const player = {
+    x: 0, y: 0, width: 180, height: 180, speed: 5, moveDir: 0, state: 'idle', attackTimer: 0,
+    draw() {
+        let currentImg = imgIdle;
+        if (this.state === 'move') currentImg = imgMove;
+        else if (this.state === 'attack') currentImg = imgAttack;
+        else if (this.state === 'dead') currentImg = imgDead;
+        if (currentImg.complete) ctx.drawImage(currentImg, this.x - this.width/2, this.y - this.height/2, this.width, this.height);
+    },
+    update() {
+        if (!isGameActive) return;
+        this.x += this.moveDir * this.speed;
+        if (this.x < this.width/2) this.x = this.width/2;
+        if (this.x > canvas.width - this.width/2) this.x = canvas.width - this.width/2;
+        if (this.state === 'attack') {
+            this.attackTimer--;
+            if (this.attackTimer <= 0) this.state = this.moveDir !== 0 ? 'move' : 'idle';
+        } else if (this.state !== 'dead') {
+            this.state = this.moveDir !== 0 ? 'move' : 'idle';
+        }
+    },
+    attack() {
+        if (!isGameActive || this.state === 'dead') return;
+        this.state = 'attack'; this.attackTimer = 15; 
+        bullets.push({ x: this.x, y: this.y - this.height/2, speed: 10, radius: 7.5 });
+    }
+};
+
+function initGalaga() {
+    stopAllBgm();
+    
+    setView(html`
+      <div class="title" style="margin-bottom:10px;">🎮 돈까스 갤러그</div>
+      <div id="game-container">
+          <canvas id="gameCanvas"></canvas>
+          
+          <div id="score-display" class="hidden" style="position:absolute; top:15px; left:15px; color:white; font-size:24px; font-weight:800; text-shadow:2px 2px 4px #000; z-index:5;">Score: 0</div>
+          
+          <div id="controls" class="hidden" style="position:absolute; bottom:20px; left:0; width:100%; display:flex; justify-content:space-between; padding:0 20px; box-sizing:border-box; z-index:5;">
+              <div id="btn-left" class="control-btn">◀</div>
+              <div id="btn-right" class="control-btn">▶</div>
+          </div>
+
+          <div id="start-panel" class="game-panel">
+              <h2 style="font-size:28px; margin-bottom:20px; text-shadow: 2px 2px 4px #000;">돈까스 획득에<br>도전하겠습니까?</h2>
+              <button id="btn-start" class="btn" style="padding:15px 40px; font-size:20px; margin-bottom:10px;">게임 시작</button>
+              <button class="btn" style="background:gray; font-size:14px;" onclick="renderMain()">메뉴로 돌아가기</button>
+          </div>
+
+          <div id="game-over-panel" class="game-panel hidden">
+              <h2 style="font-size:28px; margin-bottom:20px; text-shadow: 2px 2px 4px #000;">돈까스를 획득하는 데<br>실패하였습니다.</h2>
+              <button id="btn-restart" class="btn" style="padding:15px 40px; font-size:20px; margin-bottom:10px;">다시 도전?</button>
+              <button class="btn" style="background:gray; font-size:14px;" onclick="renderMain()">메뉴로 돌아가기</button>
+          </div>
+      </div>
+    `);
+
+    canvas = document.getElementById('gameCanvas');
+    ctx = canvas.getContext('2d');
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
+    
+    player.x = canvas.width / 2;
+    player.y = canvas.height - 100;
+
+    document.getElementById('btn-start').addEventListener('click', startGalagaGame);
+    document.getElementById('btn-restart').addEventListener('click', startGalagaGame);
+
+    const btnLeft = document.getElementById('btn-left');
+    const btnRight = document.getElementById('btn-right');
+    const handleMove = (dir) => {
+        if (!isGameActive) return;
+        if (player.moveDir !== dir && dir !== 0) playSound(moveSound);
+        player.moveDir = dir;
+    };
+
+    const moveLeft = (e) => { e.preventDefault(); handleMove(-1); };
+    const moveRight = (e) => { e.preventDefault(); handleMove(1); };
+    const stopMove = (e) => { e.preventDefault(); handleMove(0); };
+
+    btnLeft.addEventListener('touchstart', moveLeft); btnLeft.addEventListener('touchend', stopMove);
+    btnRight.addEventListener('touchstart', moveRight); btnRight.addEventListener('touchend', stopMove);
+    btnLeft.addEventListener('mousedown', moveLeft); btnLeft.addEventListener('mouseup', stopMove); btnLeft.addEventListener('mouseleave', stopMove);
+    btnRight.addEventListener('mousedown', moveRight); btnRight.addEventListener('mouseup', stopMove); btnRight.addEventListener('mouseleave', stopMove);
+}
+
+window.addEventListener('keydown', (e) => {
+    if (!isGameActive) return;
+    if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') player.moveDir = -1;
+    else if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') player.moveDir = 1;
+});
+window.addEventListener('keyup', (e) => {
+    if (!isGameActive) return;
+    if ((e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') && player.moveDir === -1) player.moveDir = 0;
+    else if ((e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') && player.moveDir === 1) player.moveDir = 0;
+});
+
+function startGalagaGame() {
+    score = 0; enemies = []; bullets = []; frameCount = 0;
+    player.x = canvas.width / 2; player.state = 'idle'; player.moveDir = 0;
+
+    document.getElementById('start-panel').classList.add('hidden');
+    document.getElementById('game-over-panel').classList.add('hidden');
+    document.getElementById('score-display').classList.remove('hidden');
+    document.getElementById('controls').classList.remove('hidden');
+    document.getElementById('score-display').innerText = `Score: ${score}`;
+
+    const bgmGame = document.getElementById('bgm_game');
+    if(bgmGame) { bgmGame.currentTime = 0; bgmGame.play().catch(e => {}); }
+
+    isGameActive = true;
+    gameLoop();
+}
+
+function gameLoop() {
+    if (!isGameActive) return;
+
+    if (bgImg.complete) ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    player.update();
+    player.draw();
+
+    frameCount++;
+    if (frameCount % 45 === 0) player.attack();
+
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        let b = bullets[i];
+        b.y -= b.speed;
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffeb3b'; ctx.fill();
+        if (b.y < 0) bullets.splice(i, 1);
+    }
+
+    if (Math.random() < 0.03) {
+        enemies.push({
+            x: Math.random() * (canvas.width - 60) + 30, y: -40, speed: 3 + Math.random() * 2,
+            width: 50, height: 50, seed: Math.random() * 100
+        });
+    }
+
+    for (let i = enemies.length - 1; i >= 0; i--) {
+        let e = enemies[i];
+        if (score >= 100) {
+            e.x += Math.sin(frameCount * 0.2 + e.seed) * 8; 
+            if (e.x < e.width/2) e.x = e.width/2;
+            if (e.x > canvas.width - e.width/2) e.x = canvas.width - e.width/2;
+        }
+        e.y += e.speed;
+
+        if (imgEnemy.complete) ctx.drawImage(imgEnemy, e.x - e.width/2, e.y - e.height/2, e.width, e.height);
+
+        let distToPlayer = Math.hypot(player.x - e.x, player.y - e.y);
+        if (distToPlayer < (player.height/2 + e.height/2 - 15)) { 
+            gameOver(); return; 
+        }
+
+        for (let j = bullets.length - 1; j >= 0; j--) {
+            let b = bullets[j];
+            let distToBullet = Math.hypot(b.x - e.x, b.y - e.y);
+            if (distToBullet < e.height/2 + b.radius) {
+                score += 10;
+                document.getElementById('score-display').innerText = `Score: ${score}`;
+                playSound(hitSound);
+                enemies.splice(i, 1); bullets.splice(j, 1); break;
+            }
+        }
+        if (e && e.y > canvas.height + 50) enemies.splice(i, 1);
+    }
+
+    animationId = requestAnimationFrame(gameLoop);
+}
+
+function gameOver() {
+    isGameActive = false;
+    cancelAnimationFrame(animationId);
+    player.state = 'dead';
+    
+    if (bgImg.complete) ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+    player.draw(); 
+
+    const bgmGame = document.getElementById('bgm_game');
+    if(bgmGame) bgmGame.pause();
+    playSound(gameOverSound);
+
+    document.getElementById('score-display').classList.add('hidden');
+    document.getElementById('controls').classList.add('hidden');
+    document.getElementById('game-over-panel').classList.remove('hidden');
+}
+
 // 앱 시작
 renderMain();
+
 </script>
 </body>
 </html>
